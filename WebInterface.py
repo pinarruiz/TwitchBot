@@ -1,17 +1,27 @@
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
 from socket import gethostbyname, gethostname
-from os import urandom
+from os import urandom, system, name
 from hashlib import md5
 from base64 import b64decode, b64encode
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto import Random
+import logging
 
+import embed
 from dbtools import Database
 from ChatBot import ChatBot
 
 app = Flask(__name__)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 botObj = None
+
+def clearConsole():
+	if name == 'nt':
+		system("cls")
+	else:
+		system("clear")
 
 def encrypt(key, source, encode=True):
 	key = SHA256.new(key.encode()).digest()
@@ -78,6 +88,7 @@ def controlPanel():
 @app.route("/")
 def webRoot():
 	global botObj
+	clearConsole()
 	confDb = Database("BotConf")
 	if session.get('login') is None:
 		if confDb.tableExists("userdata"):
@@ -100,9 +111,9 @@ def webRoot():
 			return render_template("/botfirstconfig.html")
 
 def startServer(ipAddr = gethostbyname(gethostname()), port = 80):
-	serverPort = 80
 	app.secret_key = urandom(16)
-	app.run(ipAddr, serverPort)
+	app.run(ipAddr, port)
 
 if __name__ == '__main__':
+	clearConsole()
 	startServer()

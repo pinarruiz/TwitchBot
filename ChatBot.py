@@ -48,3 +48,5 @@ class ChatBot(Thread):
 				if message == "Hola":
 					self.send_message("Bienvenido a mi stream, " + username, self.sock)
 		self.botRun = False
+if __name__ == '__main__':
+	ChatBot("imkkq", "oauth:iigl7nk3xzvc51jhazwns0bvwtrwpd").start()

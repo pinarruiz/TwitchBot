@@ -44,6 +44,7 @@
 	cursor: pointer;
 	border-radius: 15px;
 	transition-duration: 0.5s;
+  margin-top: 10px;
 }
 .form button:hover,.form button:active,.form button:focus {
 	transition-duration: 0.5s;

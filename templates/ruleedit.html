@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>DASHBOARD</title>
+		<link rel="stylesheet" type="text/css" href="/static/newbotstyle.css">
+	</head>
+	<body>
+		<div class="login-page">
+			<div class="form">
+				<form class="login-form" action="ruleeditor" method="POST">
+					<h2>EDITAR REGLA</h2>
+					<input type="text" name="rule" placeholder="PON AQUI LA REGLA (;)" value="{{rule.getRule()}}" minlength="3" required>
+					<input type="text" name="response" placeholder="PON AQUI LA RESPUESTA (username)" value="{{rule.getResponse()}}" minlength="3" required>
+					<button name="btnrules" value="apagar" style="background: {{ rule.getBtn()[1] }};">{{rule.getBtn()[0]}}</button>
+					<button name="btnrules" value="eliminar">Eliminar regla</button>
+					<button name="btnrules" value="guardar">Guardar</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

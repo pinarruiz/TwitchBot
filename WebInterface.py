@@ -9,9 +9,9 @@ from Crypto.Hash import SHA256
 from Crypto import Random
 import logging
 
-import embed
+#import embed
 from dbtools import Database
-from ChatBot import ChatBot
+from ChatBot import ChatBot, Rules
 
 app = Flask(__name__)
 log = logging.getLogger('werkzeug')
@@ -75,6 +75,29 @@ def oauthReg():
 			confDb.insertar("config", ["\"" + encrypt(session['mddd1'], request.form['userchan']) + "\"", "\"" + encrypt(session['mddd1'], request.form['oauthtw']) + "\""])
 	return redirect("/")
 
+@app.route("/newrule", methods=['POST'])
+def newrule():
+	Rules().addRule(request.form['rule'], request.form['response'])
+	return render_template("/rules.html", rulesObj = Rules().getRules())
+
+@app.route("/rulectr", methods=['POST'])
+def rulectr():
+	if request.form['ruleid'] == "nrule":
+		return render_template("/newrule.html")
+	else:
+		session['ruleidedit'] = int(request.form['ruleid'])
+		return render_template("/ruleedit.html", rule = Rules().getRuleByID(int(request.form['ruleid'])))
+
+@app.route("/ruleeditor", methods=['POST'])
+def ruleEditor():
+	if request.form['btnrules'] == "apagar":
+		Rules().toggleRule(session["ruleidedit"])
+	elif request.form['btnrules'] == "eliminar":
+		Rules().deleteRule(session["ruleidedit"])
+	elif request.form['btnrules'] == "guardar":
+		Rules().editRule(session["ruleidedit"], request.form['rule'], request.form['response'])
+	return render_template("/rules.html", rulesObj = Rules().getRules())
+
 @app.route("/controlpanel", methods=['POST'])
 def controlPanel():
 	global botObj
@@ -84,6 +107,8 @@ def controlPanel():
 			botObj = None
 		else:
 			botObj.start()
+	elif request.form['botctrl'] == "rules":
+		return render_template("/rules.html", rulesObj = Rules().getRules())
 	return redirect("/")
 
 @app.route("/")

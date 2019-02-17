@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>DASHBOARD</title>
+		<link rel="stylesheet" type="text/css" href="/static/newbotstyle.css">
+	</head>
+	<body>
+		<div class="login-page">
+			<div class="form">
+				<form class="login-form" action="rulectr" method="POST">
+					<h2>REGLAS DEL BOT</h2>
+					{% for rule in rulesObj %}
+						<button name="ruleid" value="{{rule.getRuleID()}}">{{ rule.getRule() }}</button>
+					{% endfor %}
+					{% if rulesObj == [] %}
+						<h4>No hay reglas</h4>
+					{% endif %}
+					<button name="ruleid" value="nrule">Nueva regla</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

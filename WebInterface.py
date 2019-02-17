@@ -2,6 +2,7 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 from socket import gethostbyname, gethostname
 from os import urandom, system, name
 from hashlib import md5
+from threading import Thread
 from base64 import b64decode, b64encode
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
@@ -88,7 +89,6 @@ def controlPanel():
 @app.route("/")
 def webRoot():
 	global botObj
-	clearConsole()
 	confDb = Database("BotConf")
 	if session.get('login') is None:
 		if confDb.tableExists("userdata"):
@@ -115,6 +115,10 @@ def startServer(ipAddr = gethostbyname(gethostname()), port = 80):
 	app.secret_key = urandom(16)
 	app.run(ipAddr, port)
 
-if __name__ == '__main__':
+def main(ipAddr = gethostbyname(gethostname()), port = 80):
+	Thread(target = startServer, args = (ipAddr, port)).start()
 	clearConsole()
-	startServer()
+	print(ipAddr + ":" + str(port))
+
+if __name__ == '__main__':
+	main()

@@ -9,7 +9,7 @@ from Crypto.Hash import SHA256
 from Crypto import Random
 import logging
 
-#import embed
+import embed
 from dbtools import Database
 from ChatBot import ChatBot, Rules
 
@@ -77,13 +77,18 @@ def oauthReg():
 
 @app.route("/newrule", methods=['POST'])
 def newrule():
-	Rules().addRule(request.form['rule'], request.form['response'])
-	return render_template("/rules.html", rulesObj = Rules().getRules())
+	if request.form['btnrules'] == "inicio":
+		return redirect("/")
+	else:
+		Rules().addRule(request.form['rule'], request.form['response'])
+		return render_template("/rules.html", rulesObj = Rules().getRules())
 
 @app.route("/rulectr", methods=['POST'])
 def rulectr():
 	if request.form['ruleid'] == "nrule":
 		return render_template("/newrule.html")
+	if request.form['ruleid'] == "inicio":
+		return redirect("/")
 	else:
 		session['ruleidedit'] = int(request.form['ruleid'])
 		return render_template("/ruleedit.html", rule = Rules().getRuleByID(int(request.form['ruleid'])))

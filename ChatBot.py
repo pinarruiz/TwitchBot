@@ -26,7 +26,7 @@ class Rule:
 		return self.response
 
 	def getActive(self):
-		return self.active
+		return bool(int(self.active))
 
 	def getBtn(self):
 		if self.active == 1:
@@ -72,7 +72,6 @@ class Rules:
 	def getRuleByID(self, ruleid):
 		rule = self.dbHelper.executeSQL("SELECT * FROM ruledata WHERE ruleid = " + str(ruleid))[0]
 		return Rule(rule[3], rule[0], rule[1], rule[2])
-
 
 class ChatBot(Thread):
 	def __init__(self, nick, password):
@@ -123,7 +122,9 @@ class ChatBot(Thread):
 				usernamesplit = parts[1].split("!")
 				username = usernamesplit[0]
 				print(username + ": " + message)
-				self.chatObj.addMensaje(username, mensaje)
-				if any(substring in mensaje for substring in ["Hola", "hola", "Hey", "hey"]):
-					self.send_message("Bienvenido a mi stream, " + username, self.sock)
+				self.chatObj.addMensaje(username, message)
+				rulesObj = Rules().getRules()
+				for rule in rulesObj:
+					if any(substring in message for substring in rule.getRule().split(";")) and rule.getActive():
+						self.send_message(rule.getResponse().replace("username", username), self.sock)
 		self.botRun = False

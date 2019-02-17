@@ -119,6 +119,7 @@ def main(ipAddr = gethostbyname(gethostname()), port = 80):
 	Thread(target = startServer, args = (ipAddr, port)).start()
 	clearConsole()
 	print(ipAddr + ":" + str(port))
+	system("explorer \"http://" + ipAddr + "\"")
 
 if __name__ == '__main__':
 	main()

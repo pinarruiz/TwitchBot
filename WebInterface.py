@@ -9,7 +9,7 @@ from Crypto.Hash import SHA256
 from Crypto import Random
 import logging
 
-#import embed
+import embed
 from dbtools import Database
 from ChatBot import ChatBot, Rules
 
@@ -137,7 +137,7 @@ def webRoot():
 			else:
 				btnColor = "#BD2031"
 				btnValue = "Bot desactivado"
-			return render_template("/dashboard.html", btnColor = btnColor, btnValue = btnValue)
+			return render_template("/dashboard.html", btnColor = btnColor, btnValue = btnValue, channel = decrypt(session['mddd1'], confDb.executeSQL("SELECT * FROM config")[0][0]))
 		else:
 			return render_template("/botfirstconfig.html")
 

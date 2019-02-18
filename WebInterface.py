@@ -130,7 +130,6 @@ def webRoot():
 			if botObj == None:
 				userChannel, oauthtw = confDb.executeSQL("SELECT * FROM config")[0]
 				botObj = ChatBot(decrypt(session['mddd1'], userChannel), decrypt(session['mddd1'], oauthtw))
-				botObj.start()
 			if botObj.isRunning():
 				btnColor = "#4CAF50"
 				btnValue = "Bot activado"

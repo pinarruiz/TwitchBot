@@ -108,6 +108,14 @@ class ChatBot(Thread):
 				break
 		return sock
 
+	def aplicarRegla(self, mensaje, regla):
+		if rule.getActive():
+			for msgpart in mensaje.split(" "):
+				for ruleap in regla.getRule().split(";"):
+					if ruleap == msgpart or msgpart == ruleap + ",":
+						return True
+		return False
+
 	def run(self):
 		self.botRun = True
 		self.chatObj = Chat()
@@ -125,6 +133,6 @@ class ChatBot(Thread):
 				self.chatObj.addMensaje(username, message)
 				rulesObj = Rules().getRules()
 				for rule in rulesObj:
-					if any(substring in message for substring in rule.getRule().split(";")) and rule.getActive():
+					if self.aplicarRegla(message, rule):
 						self.send_message(rule.getResponse().replace("username", username), self.sock)
 		self.botRun = False

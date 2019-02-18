@@ -9,7 +9,7 @@ from Crypto.Hash import SHA256
 from Crypto import Random
 import logging
 
-import embed
+#import embed
 from dbtools import Database
 from ChatBot import ChatBot, Rules
 

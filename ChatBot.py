@@ -1,4 +1,4 @@
-import socket
+from socket import socket
 from dbtools import Database
 from threading import Thread
 
@@ -96,7 +96,7 @@ class ChatBot(Thread):
 		return self.chatObj
 
 	def iniSocket(self):
-		sock = socket.socket()
+		sock = socket()
 		sock.connect((self.HOST, self.PORT))
 		sock.send(bytes("PASS " + self.PASS + "\r\n", "UTF-8"))
 		sock.send(bytes("NICK " + self.NICK + "\r\n", "UTF-8"))

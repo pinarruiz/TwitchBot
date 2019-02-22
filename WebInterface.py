@@ -7,15 +7,15 @@ from base64 import b64decode, b64encode
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto import Random
-import logging
+from logging import ERROR, getLogger
 
-import embed
 from dbtools import Database
 from ChatBot import ChatBot, Rules
+import embed
 
 app = Flask(__name__)
-log = logging.getLogger('werkzeug')
-log.setLevel(logging.ERROR)
+log = getLogger('werkzeug')
+log.setLevel(ERROR)
 botObj = None
 
 def clearConsole():

@@ -1,5 +1,5 @@
 from os import listdir
-from base64 import b64encode, b64decode
+from base64 import b64encode
 
 def detectFolders(where = "."):
 	directories = []
@@ -15,7 +15,7 @@ def detectFolders(where = "."):
 
 def embedTo(output = "embed.py", target = None, args = None, where = None):
 	with open(output, "w") as embededFile:
-		embededFile.write("import base64\nfrom os import makedirs, remove\nfolders = " + str(detectFolders()) + "\nfor folder in folders:\n\tif folder != \".\":\n\t\ttry:\n\t\t\tremove(folder)\n\t\texcept:\n\t\t\tpass\n\t\ttry:\n\t\t\tmakedirs(folder)\n\t\texcept:\n\t\t\tpass\n")
+		embededFile.write("from base64 import b64decode\nfrom os import makedirs, remove\nfolders = " + str(detectFolders()) + "\nfor folder in folders:\n\tif folder != \".\":\n\t\ttry:\n\t\t\tremove(folder)\n\t\texcept:\n\t\t\tpass\n\t\ttry:\n\t\t\tmakedirs(folder)\n\t\texcept:\n\t\t\tpass\n")
 		directories = detectFolders()
 		for directorio in directories:
 			for file in listdir(directorio):
@@ -23,7 +23,7 @@ def embedTo(output = "embed.py", target = None, args = None, where = None):
 					if file.split(".")[0] not in ["embederUtil"]:
 						with open(directorio + "/" + file, "r") as template:
 							encoded = b64encode(template.read().encode()).decode()
-							embededFile.write(file.split(".")[0] + " = base64.b64decode(\"" + encoded + "\".encode())\n")
+							embededFile.write(file.split(".")[0] + " = b64decode(\"" + encoded + "\".encode())\n")
 							embededFile.write("open(\"" + str(directorio + "/" + file) + "\", \"w\").write(" + file.split(".")[0] + ".decode())\n")
 		if where != None:
 			embededFile.write("from " + str(where) + " import " + str(target) + "\n")

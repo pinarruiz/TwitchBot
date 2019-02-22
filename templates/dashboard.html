@@ -5,26 +5,67 @@
 		<link rel="stylesheet" type="text/css" href="/static/newbotstyle.css">
 		<style type="text/css">
 			.wrapper{
-				width: 80%;
-				padding-left: 20vw;
+				width: fit-content;
 				text-align: center;
 			}
 			.leftdiv{
 				display: inline-block;
+				vertical-align: top;
+				height: 360px;
 			}
 			.chatdiv{
-				margin-left: 40px;
 				display: inline-block;
 				vertical-align:top;
+				padding: 20px;
 			}
 			.chat{
-				width: 30vw;
+				width: -webkit-fill-available;
 				height: 95vh;
+				max-width: max-content;
+				max-height: -webkit-fill-available;
 			}
 		</style>
+		<script>
+			var tag = document.createElement('script');
+			var autoplay = true;
+			tag.src = "https://www.youtube.com/iframe_api";
+			var firstScriptTag = document.getElementsByTagName('script')[0];
+			firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+			var player;
+			function onYouTubeIframeAPIReady() {
+				player = new YT.Player('player', {
+					height: '360',
+					width: '640',
+					videoId: 'QH2-TGUlwu4',
+					playerVars: {'autoplay': 0, 'controls': 0},
+					events: {
+						'onReady': onPlayerReady,
+						'onStateChange': onPlayerStateChange
+					}
+				});
+			}
+			function onPlayerReady(event) {
+				event.target.playVideo();
+			}
+			function onPlayerStateChange(event) {
+				if (event.data == YT.PlayerState.PLAYING && autoplay){
+					player.stopVideo();
+					autoplay = false;
+				}
+				console.log(event.data);
+			}
+			function stopVideo() {
+				player.stopVideo();
+			}
+		</script>
 	</head>
 	<body>
 		<div class="login-page wrapper">
+			<div class="form leftdiv" style="width: 640px; max-width: 640px">
+				<form class="login-form" action="rulectr" method="POST">
+					<div id="player" style="width: 640px; height: 360px;"></div>
+				</form>
+			</div>
 			<div class="form leftdiv">
 				<form class="login-form" action="controlpanel" method="POST">
 					<h2>PANEL DE CONTROL</h2>
@@ -32,12 +73,12 @@
 					<button name="botctrl" value="rules">Reglas del bot</button>
 				</form>
 			</div>
-			<div class="chatdiv">
+			<div class=" form chatdiv" style="height: 90vh;">
 				<iframe frameborder="0"
 					class="chat"
 					scrolling="no"
 					src="https://www.twitch.tv/embed/{{channel}}/chat?darkpopout">
-				</iframe>	
+				</iframe>
 			</div>
 		</div>
 	</body>

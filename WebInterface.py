@@ -11,8 +11,7 @@ from logging import ERROR, getLogger
 
 from dbtools import Database
 from ChatBot import ChatBot, Rules
-#import embed
-import sys
+import embed
 
 app = Flask(__name__)
 log = getLogger('werkzeug')

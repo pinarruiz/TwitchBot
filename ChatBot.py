@@ -160,7 +160,7 @@ class ChatBot(Thread):
 							servicesDatabase = Database("Services")
 							servicesDatabase.insertar("songrequest", ["\"" + getVideoIdFromUrl(message.split(" ")[1]) + "\""])
 					except Exception as e:
-						print(e)
+						pass
 				else:
 					for rule in rulesObj:
 						if self.aplicarRegla(message, rule):

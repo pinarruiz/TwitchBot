@@ -52,7 +52,6 @@ def feedMe():
 			servicesDatabase = Database("Services")
 			videoid = servicesDatabase.executeSQL("SELECT * FROM songrequest")[0][0]
 			servicesDatabase.executeSQL("DELETE FROM songrequest WHERE youtubeurl = '" + videoid + "'", False)
-			print(videoid)
 			return videoid
 		except:
 			return ""

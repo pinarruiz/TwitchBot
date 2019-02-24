@@ -164,7 +164,7 @@ def serviceCtr():
 		else:
 			servicesDatabase.modificar("songrequestconf", {"autostart" : 1}, {"autostart" : 0})
 			srColor = "#BD2031"
-	return render_template("/servicios.html", srColor = srColor)
+	return redirect("/")
 
 @app.route("/")
 def webRoot():

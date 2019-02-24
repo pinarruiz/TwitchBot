@@ -1,7 +1,12 @@
 from socket import socket
 from dbtools import Database
 from threading import Thread
+from re import compile, findall
+from collections import OrderedDict
 from urllib.parse import urlparse, parse_qs
+from urllib.request import urlopen
+from urllib.error import URLError
+
 
 def getVideoIdFromUrl(value):
     query = urlparse(value)
@@ -16,6 +21,38 @@ def getVideoIdFromUrl(value):
         if query.path[:3] == '/v/':
             return query.path.split('/')[2]
     return None
+
+def crawl(url):
+	if 'http' not in url:
+		url = 'http://' + url
+	sTUBE = ''
+	cPL = ''
+	amp = 0
+	final_url = []
+	if 'list=' in url:
+		eq = url.rfind('=') + 1
+		cPL = url[eq:]
+	else:
+		return []
+	try:
+		yTUBE = urlopen(url).read()
+		sTUBE = str(yTUBE)
+	except URLError as e:
+		pass
+	tmp_mat = compile(r'watch\?v=\S+?list=' + cPL)
+	mat = findall(tmp_mat, sTUBE)
+	if mat:
+		for PL in mat:
+			yPL = str(PL)
+			if '&' in yPL:
+				yPL_amp = yPL.index('&')
+			final_url.append('http://www.youtube.com/' + yPL[:yPL_amp])
+		videos = list(OrderedDict.fromkeys(final_url))
+		for i in range(0, len(videos)):
+			videos[i] = getVideoIdFromUrl(videos[i])
+		return videos
+	else:
+		return []
 
 class Chat:
 	def __init__(self):

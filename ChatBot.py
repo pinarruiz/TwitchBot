@@ -1,6 +1,21 @@
 from socket import socket
 from dbtools import Database
 from threading import Thread
+from urllib.parse import urlparse, parse_qs
+
+def getVideoIdFromUrl(value):
+    query = urlparse(value)
+    if query.hostname == 'youtu.be':
+        return query.path[1:]
+    if query.hostname in ('www.youtube.com', 'youtube.com'):
+        if query.path == '/watch':
+            p = parse_qs(query.query)
+            return p['v'][0]
+        if query.path[:7] == '/embed/':
+            return query.path.split('/')[2]
+        if query.path[:3] == '/v/':
+            return query.path.split('/')[2]
+    return None
 
 class Chat:
 	def __init__(self):
@@ -95,6 +110,13 @@ class ChatBot(Thread):
 	def getChat(self):
 		return self.chatObj
 
+	def isServiceActive(self, service):
+		servicesDatabase = Database("Services")
+		if service == "sr" and servicesDatabase.tableExists("songrequestconf") and servicesDatabase.tableExists("songrequest"):
+			return bool(servicesDatabase.executeSQL("SELECT * FROM songrequestconf")[0][0])
+		else:
+			return False
+
 	def iniSocket(self):
 		sock = socket()
 		sock.connect((self.HOST, self.PORT))
@@ -126,13 +148,21 @@ class ChatBot(Thread):
 				if len(parts) < 3:
 					continue
 				if "QUIT" not in parts[1] and "JOIN" not in parts[1] and "PART" not in parts[1]:
-					message = parts[2][:len(parts[2])]
+					message = ':'.join(parts[2:])
 				usernamesplit = parts[1].split("!")
 				username = usernamesplit[0]
 				print(username + ": " + message)
 				self.chatObj.addMensaje(username, message)
 				rulesObj = Rules().getRules()
-				for rule in rulesObj:
-					if self.aplicarRegla(message, rule):
-						self.send_message(rule.getResponse().replace("username", username), self.sock)
+				if message[0] == "!":
+					try:
+						if (message.split(" ")[0] == "!sr" or message.split(" ")[0] == "!songrequest") and self.isServiceActive("sr") and getVideoIdFromUrl(message.split(" ")[1]) != None:
+							servicesDatabase = Database("Services")
+							servicesDatabase.insertar("songrequest", ["\"" + getVideoIdFromUrl(message.split(" ")[1]) + "\""])
+					except Exception as e:
+						print(e)
+				else:
+					for rule in rulesObj:
+						if self.aplicarRegla(message, rule):
+							self.send_message(rule.getResponse().replace("username", username), self.sock)
 		self.botRun = False

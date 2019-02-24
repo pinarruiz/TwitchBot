@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SERVICIOS</title>
+		<link rel="stylesheet" type="text/css" href="/static/newbotstyle.css">
+		<style type="text/css">
+			.servicediv{
+				width: 30vw;
+				text-align: center;
+				max-width: unset;
+				margin-right: 0px;
+			}
+			.buttonform{
+				text-align: left;
+				width: -webkit-fill-available;
+				max-width: unset;
+				text-align: center;
+			}
+			.serviceform{
+				width: -webkit-fill-available;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="login-page" style="width: fit-content;">
+			<div class="form servicediv">
+				<form class="login-form serviceform" action="servicectr" method="POST">
+					<h2>SERVICIOS</h2>
+					<button name="service" value="sr" class="form buttonform" style="background: {{ srColor  }};">SongRequest</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

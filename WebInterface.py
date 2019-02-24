@@ -11,7 +11,8 @@ from logging import ERROR, getLogger
 
 from dbtools import Database
 from ChatBot import ChatBot, Rules
-import embed
+#import embed
+import sys
 
 app = Flask(__name__)
 log = getLogger('werkzeug')
@@ -45,6 +46,20 @@ def decrypt(key, source, decode=True):
 		raise ValueError("Invalid padding...")
 	return data[:-padding].decode()
 
+@app.route("/_feedsr", methods = ['GET'])
+def feedMe():
+	if session.get('login') is not None:
+		try:
+			servicesDatabase = Database("Services")
+			videoid = servicesDatabase.executeSQL("SELECT * FROM songrequest")[0][0]
+			servicesDatabase.executeSQL("DELETE FROM songrequest WHERE youtubeurl = '" + videoid + "'", False)
+			print(videoid)
+			return videoid
+		except:
+			return ""
+	else:
+		return ""
+
 @app.route("/registerbot", methods=['POST'])
 def registerBot():
 	if request.form['user'] != None and request.form['pass1'] != None and request.form['pass2'] != None:
@@ -77,6 +92,8 @@ def oauthReg():
 
 @app.route("/newrule", methods=['POST'])
 def newrule():
+	if session.get('login') is None:
+		return redirect("/")
 	if request.form['btnrules'] == "inicio":
 		return redirect("/")
 	else:
@@ -85,6 +102,8 @@ def newrule():
 
 @app.route("/rulectr", methods=['POST'])
 def rulectr():
+	if session.get('login') is None:
+		return redirect("/")
 	if request.form['ruleid'] == "nrule":
 		return render_template("/newrule.html")
 	if request.form['ruleid'] == "inicio":
@@ -95,6 +114,8 @@ def rulectr():
 
 @app.route("/ruleeditor", methods=['POST'])
 def ruleEditor():
+	if session.get('login') is None:
+		return redirect("/")
 	if request.form['btnrules'] == "apagar":
 		Rules().toggleRule(session["ruleidedit"])
 	elif request.form['btnrules'] == "eliminar":
@@ -105,6 +126,8 @@ def ruleEditor():
 
 @app.route("/controlpanel", methods=['POST'])
 def controlPanel():
+	if session.get('login') is None:
+		return redirect("/")
 	global botObj
 	if request.form['botctrl'] == "btnonoff" and botObj != None:
 		if botObj.isRunning():
@@ -114,13 +137,43 @@ def controlPanel():
 			botObj.start()
 	elif request.form['botctrl'] == "rules":
 		return render_template("/rules.html", rulesObj = Rules().getRules())
+	elif request.form['botctrl'] == "servicios":
+		servicesDatabase = Database("Services")
+		if not servicesDatabase.tableExists("songrequestconf") or not servicesDatabase.tableExists("songrequest"):
+			servicesDatabase.createTable("songrequestconf", ["autostart number"])
+			servicesDatabase.createTable("songrequest", ["youtubeurl varchar(255)"])
+			servicesDatabase.insertar("songrequestconf", [0])
+		if servicesDatabase.executeSQL("SELECT * FROM songrequestconf")[0][0] == 0:
+			srColor = "#BD2031"
+		else:
+			srColor = "#4CAF50"
+		return render_template("/servicios.html", srColor = srColor)
 	return redirect("/")
+
+@app.route("/servicectr", methods=['POST'])
+def serviceCtr():
+	if session.get('login') is None:
+		return redirect("/")
+	servicesDatabase = Database("Services")
+	if request.form['service'] == "sr":
+		if not servicesDatabase.tableExists("songrequestconf") or not servicesDatabase.tableExists("songrequest"):
+			servicesDatabase.createTable("songrequestconf", ["autostart number"])
+			servicesDatabase.createTable("songrequest", ["youtubeurl varchar(255)"])
+			servicesDatabase.insertar("songrequestconf", [0])
+		if servicesDatabase.executeSQL("SELECT * FROM songrequestconf")[0][0] == 0:
+			servicesDatabase.modificar("songrequestconf", {"autostart" : 0}, {"autostart" : 1})
+			srColor = "#4CAF50"
+		else:
+			servicesDatabase.modificar("songrequestconf", {"autostart" : 1}, {"autostart" : 0})
+			srColor = "#BD2031"
+	return render_template("/servicios.html", srColor = srColor)
 
 @app.route("/")
 def webRoot():
 	global botObj
 	confDb = Database("BotConf")
 	if session.get('login') is None:
+		session['autostart'] = True
 		if confDb.tableExists("userdata"):
 			return render_template("/login.html")
 		else:
@@ -130,6 +183,9 @@ def webRoot():
 			if botObj == None:
 				userChannel, oauthtw = confDb.executeSQL("SELECT * FROM config")[0]
 				botObj = ChatBot(decrypt(session['mddd1'], userChannel), decrypt(session['mddd1'], oauthtw))
+				if session['autostart']:
+					botObj.start()
+					session['autostart'] = False
 			if botObj.isRunning():
 				btnColor = "#4CAF50"
 				btnValue = "Bot activado"

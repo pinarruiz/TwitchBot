@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SERVICIOS</title>
+		<link rel="stylesheet" type="text/css" href="/static/newbotstyle.css">
+		<style type="text/css">
+			.servicediv{
+				width: 30vw;
+				text-align: center;
+				max-width: unset;
+				margin-right: 0px;
+			}
+			.buttonform{
+				text-align: left;
+				width: -webkit-fill-available;
+				max-width: unset;
+				text-align: center;
+			}
+			.serviceform{
+				width: -webkit-fill-available;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="login-page" style="width: fit-content;">
+			<div class="form servicediv">
+				<form class="login-form serviceform" action="singleservice" method="POST">
+					<h2>{{ service.getName().upper() }}</h2>
+					<button name="service" value="toggle;{{ service.getName() }}" class="form buttonform" style="background: {{ service.getColor() }};">{{ service.getBtnString() }}</button>
+				</form>
+				{% if service.getName() == "songrequest" %}
+					<form class="login-form serviceform" action="singleservice" method="POST">
+						<input type="text" name="fallback" placeholder="Lista de fallback" value="{{ service.getOption('fallback') }}" minlength="10" required>
+						<button name="service" value="save;songrequest;fallback" class="form buttonform">Guardar</button>
+					</form>
+				{% endif %}
+				<form class="login-form serviceform" action="singleservice" method="POST">
+					<button name="service" value="inicio" class="form buttonform">Inicio</button>
+				</form>
+			</div>
+		</div>
+	</body>
+</html>

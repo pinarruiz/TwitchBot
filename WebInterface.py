@@ -8,15 +8,56 @@ from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto import Random
 from logging import ERROR, getLogger
+from random import randint
 
 from dbtools import Database
-from ChatBot import ChatBot, Rules
+from ChatBot import ChatBot, Rules, crawlYoutubeList
 import embed
 
 app = Flask(__name__)
 log = getLogger('werkzeug')
 log.setLevel(ERROR)
 botObj = None
+
+class Service:
+	def __init__(self, name):
+		self.serviceDb = Database("Services")
+		self.table = name
+		self.confTable = name + "conf"
+
+	def getName(self):
+		return self.table
+
+	def toggleService(self):
+		if self.serviceDb.executeSQL("SELECT * FROM " + self.confTable)[0][0] == 0:
+			self.serviceDb.modificar(self.confTable, {"autostart" : 0}, {"autostart" : 1})
+		else:
+			self.serviceDb.modificar(self.confTable, {"autostart" : 1}, {"autostart" : 0})
+
+	def getColor(self):
+		if self.serviceDb.executeSQL("SELECT * FROM " + self.confTable)[0][0] == 0:
+			return "#BD2031"
+		else:
+			return "#4CAF50"
+
+	def getBtnString(self):
+		if self.serviceDb.executeSQL("SELECT * FROM " + self.confTable)[0][0] == 0:
+			return "Apagado"
+		else:
+			return "Encendido"
+
+	def setOption(self, option, seted):
+		self.serviceDb.modificar(self.confTable, None, {option : "\"" + seted + "\""})
+
+	def getOption(self, option):
+		try:
+			optValue = self.serviceDb.executeSQL("SELECT " + str(option) + " FROM " + self.confTable)[0][0]
+		except:
+			optValue = 0
+		if option == "fallback" and (optValue == 0 or optValue == "0"):
+			return ""
+		else:
+			return optValue
 
 def clearConsole():
 	if name == 'nt':
@@ -48,12 +89,21 @@ def decrypt(key, source, decode=True):
 @app.route("/_feedsr", methods = ['GET'])
 def feedMe():
 	if session.get('login') is not None:
+		servicesDatabase = Database("Services")
+		if Service("songrequest").getOption("autostart") == 0:
+			return ""
 		try:
-			servicesDatabase = Database("Services")
 			videoid = servicesDatabase.executeSQL("SELECT * FROM songrequest")[0][0]
 			servicesDatabase.executeSQL("DELETE FROM songrequest WHERE youtubeurl = '" + videoid + "'", False)
 			return videoid
 		except:
+			fbList = Service("songrequest").getOption("fallback")
+			if fbList != "":
+				try:
+					idList = crawlYoutubeList(fbList)
+					return idList[randint(0, len(idList) - 1)]
+				except:
+					return ""
 			return ""
 	else:
 		return ""
@@ -138,33 +188,33 @@ def controlPanel():
 	elif request.form['botctrl'] == "servicios":
 		servicesDatabase = Database("Services")
 		if not servicesDatabase.tableExists("songrequestconf") or not servicesDatabase.tableExists("songrequest"):
-			servicesDatabase.createTable("songrequestconf", ["autostart number"])
+			servicesDatabase.createTable("songrequestconf", ["autostart number", "fallback varchar(255)"])
 			servicesDatabase.createTable("songrequest", ["youtubeurl varchar(255)"])
-			servicesDatabase.insertar("songrequestconf", [0])
-		if servicesDatabase.executeSQL("SELECT * FROM songrequestconf")[0][0] == 0:
-			srColor = "#BD2031"
-		else:
-			srColor = "#4CAF50"
-		return render_template("/servicios.html", srColor = srColor)
+			servicesDatabase.insertar("songrequestconf", [0, "\"0\""])
+		return render_template("/servicios.html", srColor = Service("songrequest").getColor())
 	return redirect("/")
 
 @app.route("/servicectr", methods=['POST'])
 def serviceCtr():
-	if session.get('login') is None:
+	if session.get('login') is None or request.form['service'] == "inicio":
 		return redirect("/")
 	servicesDatabase = Database("Services")
-	if request.form['service'] == "sr":
+	if request.form['service'] == "songrequest":
 		if not servicesDatabase.tableExists("songrequestconf") or not servicesDatabase.tableExists("songrequest"):
 			servicesDatabase.createTable("songrequestconf", ["autostart number"])
 			servicesDatabase.createTable("songrequest", ["youtubeurl varchar(255)"])
-			servicesDatabase.insertar("songrequestconf", [0])
-		if servicesDatabase.executeSQL("SELECT * FROM songrequestconf")[0][0] == 0:
-			servicesDatabase.modificar("songrequestconf", {"autostart" : 0}, {"autostart" : 1})
-			srColor = "#4CAF50"
-		else:
-			servicesDatabase.modificar("songrequestconf", {"autostart" : 1}, {"autostart" : 0})
-			srColor = "#BD2031"
-	return redirect("/")
+			servicesDatabase.insertar("songrequestconf", [0, ""])
+	return render_template("/servicio.html", service = Service(request.form['service']))
+
+@app.route("/singleservice", methods=['POST'])
+def singleService():
+	if request.form['service'] == "inicio" or session.get('login') is None:
+		return redirect("/")
+	elif request.form['service'].split(";")[0] == 'toggle':
+		Service(request.form['service'].split(";")[1]).toggleService()
+	elif request.form['service'].split(";")[0] == 'save':
+		Service(request.form['service'].split(";")[1]).setOption(request.form['service'].split(";")[2], request.form['fallback'])
+	return render_template("/servicio.html", service = Service(request.form['service'].split(";")[1]))
 
 @app.route("/")
 def webRoot():

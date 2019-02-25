@@ -7,7 +7,6 @@ from urllib.parse import urlparse, parse_qs
 from urllib.request import urlopen
 from urllib.error import URLError
 
-
 def getVideoIdFromUrl(value):
     query = urlparse(value)
     if query.hostname == 'youtu.be':
@@ -22,7 +21,7 @@ def getVideoIdFromUrl(value):
             return query.path.split('/')[2]
     return None
 
-def crawl(url):
+def crawlYoutubeList(url):
 	if 'http' not in url:
 		url = 'http://' + url
 	sTUBE = ''

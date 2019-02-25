@@ -48,10 +48,13 @@ class Database:
 			query = "UPDATE " + str(tableName) + " SET "
 			for data in value:
 				query += str(data) + " = " + str(value[str(data)]) + ", "
-			query = query[:-2] + " WHERE "
-			for key in where:
-				query += str(key) + " = " + str(where[key]) + " AND "
-			query = query[:-4]
+			if where != None:
+				query = query[:-2] + " WHERE "
+				for key in where:
+					query += str(key) + " = " + str(where[key]) + " AND "
+				query = query[:-4]
+			else:
+				query = query[:-2]
 			self.cursor.execute(query)
 			self.conexion.commit()
 			return True

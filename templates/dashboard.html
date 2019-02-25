@@ -34,43 +34,55 @@
 			firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 			var player;
 			var interSet = "";
-			var videoStateCount;
+			var videoStateCount = 0;
 			var intervalEnd;
 
 			function onYouTubeIframeAPIReady() {
-				setInterval(function(){
-					if (interSet == ""){
-						$.get("/_feedsr",
-							function (data){
-								if(data != ""){
-									interSet = "1";
-									player = new YT.Player('player', {
-									height: '360',
-									width: '640',
-									videoId: data,
-									playerVars: {'autoplay': 1, 'controls': 1},
-									events: {
-										'onReady': onPlayerReady,
-										'onStateChange': onPlayerStateChange
-										}
-									});
-								}
-							})
-					}
-				}, 1000);
+				player = new YT.Player('player', {
+					height: '360',
+					width: '640',
+					playerVars: {'autoplay': 1, 'controls': 1},
+					events: {
+						'onReady': onPlayerReady,
+						'onStateChange': onPlayerStateChange
+						}
+					});
 			}
 			function onPlayerReady(event) {
-				event.target.playVideo();
+				$.get("/_feedsr", function(ids){
+					if(ids != ""){
+						player.loadVideoById(ids);
+						clearInterval(intervalEnd);
+					}
+				});
 			}
 			function onPlayerStateChange(event) {
+				console.log("evt: " + event.data);
 				if(event.data == YT.PlayerState.ENDED){
 					intervalEnd = setInterval(function(){	
-						$.get("/_feedsr", function(data){
-							if(data != ""){
-								player.loadVideoById(data);
+						$.get("/_feedsr", function(ids){
+							if(ids != ""){
+								console.log(ids);
+								window.player.loadVideoById(ids);
 								clearInterval(intervalEnd);
 							}
 						});
+					}, 2000);
+				}else if(event.data == -1){
+					intervalCrash = setInterval(function(){
+						videoStateCount = videoStateCount + player.getPlayerState();
+						if (videoStateCount == -5){
+							$.get("/_feedsr", function(ids){
+								if(ids != ""){
+									console.log(ids);
+									clearInterval(intervalCrash);
+									window.player.loadVideoById(ids);
+									videoStateCount = 0;
+								}
+							});
+						}else if (videoStateCount >0){
+							videoStateCount = 0;
+						}
 					}, 1000);
 				}
 			}
